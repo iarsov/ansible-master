@@ -1,0 +1,52 @@
+# List of
+db_software_image:
+      - { filename: linuxx64_12201_database.zip, version: 12.2.0.1, version_short: 12c }
+      - { filename: linuxamd64_12102_database_1of2.zip, version: 12.1.0.2, version_short: 12c }
+      - { filename: linuxamd64_12102_database_2of2.zip, version: 12.1.0.2, version_short: 12c }
+      - { filename: linuxamd64_12c_database_1of2.zip, version: 12.1.0.1, version_short: 12c }
+      - { filename: linuxamd64_12c_database_2of2.zip, version: 12.1.0.1, version_short: 12c }
+      - { filename: p13390677_112040_Linux-x86-64_1of7.zip, version: 11.2.0.4, version_short: 11g }
+      - { filename: p13390677_112040_Linux-x86-64_2of7.zip, version: 11.2.0.4, version_short: 11g }
+      - { filename: p10404530_112030_Linux-x86-64_1of7.zip, version: 11.2.0.3, version_short: 11g }
+      - { filename: p10404530_112030_Linux-x86-64_2of7.zip, version: 11.2.0.3, version_short: 11g }
+
+db_version:
+      - { version: 12.2.0.1, code: 12c}
+      - { version: 12.1.0.2, code: 12c}
+      - { version: 11.2.0.4, code: 11g}
+      - { version: 11.2.0.3, code: 11g}
+
+
+########################################################
+#
+# Patch 24917987: COMBO OF OJVM COMPONENT 12.1.0.2.170117 DB PSU + DB BP 12.1.0.2.170117
+#  - Patch 24968615 - Database Proactive Bundle Patch (DB BP) 12.1.0.2.170117 --> RAC-Rolling Installable
+#  - Patch 24917972 - Oracle JavaVM Component 12.1.0.2.170117 Database PSU --> Non RAC-Rolling Installable
+#
+########################################################
+db_patch_list:
+      - { patch_id: 24917987, patch_dbbp_id: 24968615, patch_dbbp_only_id: 24732088, patch_ojvm_id: 24917972}
+
+use_opatchauto: false
+
+#
+# Which edition to be installed
+#
+# oracle_db_version: 12.2.0.1 | 12.1.0.2 | 12.1.0.1 | 11.2.0.4 | 11.2.0.3
+#
+# oracle_db_edition EE | SE2 | SE | SEONE
+# 12.2
+#   - EE
+#   - SE2
+# 12.1
+#   - EE
+# 11.2.0.4 | 11.2.0.3
+#   - EE
+#   - SE
+#   - SEONE
+#
+# example
+db_list:
+   - oracle_home_dir: db1
+     oracle_db_version: 12.1.0.2
+     oracle_db_edition: EE

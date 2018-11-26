@@ -1,0 +1,76 @@
+
+#- shell: rpm -q --queryformat '%{VERSION}' redhat-release-server | cut -d"." -f1
+#  register: reg_os_major_version
+
+- shell: echo {{ ansible_distribution_version }} | cut -d"." -f1
+  register: reg_os_major_version
+
+- name: Install epel-release RHEL 7.x
+  yum: name=epel-release state=installed
+  when: reg_os_major_version.stdout|int == 7|int
+
+- name: Install epel-release RHEL 6.x
+  yum: name=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm state=installed
+  when: reg_os_major_version.stdout|int == 6|int
+
+- name: Install pip
+  yum: name=python-pip state=installed
+
+- name: Upgrade pip
+  shell: pip install --upgrade pip
+
+- name: Install pexpect
+  shell: pip install pexpect
+
+- name: Upgrade pexpect
+  shell: pip install --upgrade pexpect
+
+#- name: Install packages required by Oracle
+#  yum: name={{ item.rpm }} state=installed
+#  with_items: "{{ oracle_req_rpms }}"
+#  when: item.os_major_version|int == os_major_version |int
+
+
+- name: Install packages required by Oracle
+  yum: name={{ item }} state=installed
+  with_items: "{{ oracle_req_rpms }}"
+
+- name: sysctl settings
+  sysctl: name={{ item.name }} value="{{ item.value }}" state=present reload=yes ignoreerrors=yes
+  with_items: "{{ oracle_sysctl }}"
+
+- name: security limits
+  pam_limits: domain=oracle limit_type={{ item.name.split(' ')[0] }} limit_item={{ item.name.split(' ')[1] }} value={{ item.value }}
+  with_items: "{{ oracle_seclimits }}"
+
+- name: Add Oracle OS groups
+  group:
+    name: "{{ item.group }}"
+    gid: "{{ item.gid }}"
+  with_items: "{{ oracle_os_groups }}"
+
+- name: Add Oracle users
+  user:
+    name: "{{ item.username }}"
+    append: yes
+    group: "{{ item.primary_group }}"
+    groups: "{{ item.other_groups }}"
+    uid: "{{ item.uid }}"
+    password: "{{ item.password }}"
+  with_items: "{{ oracle_users }}"
+
+- name: sysctl settings
+  sysctl: name={{ item.name }} value="{{ item.value }}" state=present reload=yes ignoreerrors=yes
+  with_items: "{{ oracle_hugepages }}"
+
+- name: 'reboot...'
+  shell: nohup bash -c 'sleep 2 && reboot' &
+  async: 0
+  poll: 0
+  ignore_errors: true
+  register: rebooting
+
+- name: 'waiting...'
+  local_action: wait_for host={{ ansible_host }} search_regex='OpenSSH' port=22 state='started' delay=60 timeout=300
+  become: no
+  when: rebooting|changed

@@ -1,0 +1,47 @@
+
+sw_nfs_stage: "/oracle/install"
+sw_install_from_nfs: true # Whether to use NFS installation binaries
+sw_is_local: "{% if sw_install_from_nfs==true %}false{% else %}true{% endif %}"
+
+dir_patch_sw: "{{ sw_nfs_stage }}"
+
+stage_src: "" # Add source location from where to copy software binaries | applicable when sw_from_nfs: false
+stage_dest: "" # Destination to where to push software binaries | applicable when sw_from_nfs: false
+
+sw_stage: "{% if sw_install_from_nfs==true %}{{ sw_nfs_stage }}{% else %}{{ stage_dest }}{% endif %}"
+
+# Whether to push installation binaries to remote host from "stage_src"
+push_sw_binaries: "{% if sw_install_from_nfs==true %}false{% else %}true{% endif %}"
+
+# Whether to unzip software binaries
+extract_sw_binaries: "{% if sw_install_from_nfs==true %}false{% else %}true{% endif %}"
+
+# Whether to remove unzipped binaries after installation
+# Applicable only if "extract_install_binaries" is set to true.
+purge_sw_binaries: "{% if sw_install_from_nfs==true %}false{% else %}true{% endif %}"
+
+push_patch_binaries: false
+extract_patch_binaries: false
+
+sw_install_check_pattern: "((.|\n)*)The installation of Oracle Database (10g|11g|12c) was successful((.|\n)*)"
+sw_opatchauto_check_pattern: "((.|\n)*)OPatchAuto successful((.|\n)*)"
+sw_opatch_check_pattern: "((.|\n)*)(OPatch succeeded|OPatch completed with warnings)((.|\n)*)"
+
+inventory_location: "/oracle/app/oraInventory" # Oracle inventory directory
+oracle_base: "/oracle/app/oracle" # Oracle base directory
+oracle_home: "/oracle/app/oracle/product/{{ item.oracle_db_version }}/{{ item.oracle_home_dir }}" # Oracle home directory
+oracle_home_patch: "/oracle/app/oracle/product/{{ item[0].oracle_db_version }}/{{ item[0].oracle_home_dir }}" # Oracle home directory
+
+oracle_db_rsp_file_dir: "/tmp" # Directory where response file to be created from template
+oracle_db_rsp_file: "{{ item.oracle_home_dir}}_sw_install{{ item.oracle_db_version }}.rsp" # Response file name
+oracle_dbca_rsp_file: "{{ item.oracle_home_dir}}_db_create{{ item.oracle_db_version }}.rsp" # Response file name
+
+oracle_owner: oracle # Oracle installation owner
+unix_group_name: dba # Oracle installation group
+
+osdba_group: dba # Used to set OS dba group
+osoper_group: oper # Used to set OS oper group
+osbackupdba_group: backupdba # Used to set OS backupdba group / applicable > 12.1
+osdgdba_group: dgdba # Used to set OS dgdba group / applicable > 12.1
+oskmdba_group: kmdba # Used to set OS kmdba group / applicable > 12.1
+osracdba_group: racdba # Used to set OS rac group / applicable > 12.2

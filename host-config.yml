@@ -1,0 +1,7 @@
+
+- name: Oracle Software Installation and Database Creation
+  hosts: database
+  user: root
+  become: yes
+  roles:
+   - host_configuration

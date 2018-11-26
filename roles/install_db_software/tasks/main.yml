@@ -1,0 +1,103 @@
+
+- name: Push software binaries to host
+  copy:
+       src: "{{ stage_src }}/{{ item[1].version }}/{{ item[1].filename }}"
+       dest: "{{ stage_dest }}"
+       owner: "{{ oracle_owner }}"
+       group: "{{ unix_group_name }}"
+       mode: "u=rw,g=r,o=r"
+  with_nested:
+      - "{{ db_list }}"
+      - "{{ db_software_image }}"
+  when:
+       item[1].version == item[0].oracle_db_version and not sw_is_local
+
+- name: Unzip software binaries
+  unarchive:
+       src: "{{ stage_dest }}/{{ item[1].version }}/{{ item[1].filename }}"
+       dest: "{{ stage_dest }}/{{ item[1].version }}"
+  with_nested:
+      - "{{ db_list }}"
+      - "{{ db_software_image }}"
+  when:
+       item[1].version == item[0].oracle_db_version and not sw_is_local
+
+#- name: Check if oracle inventory exists
+#  stat:
+#    path: "{{ inventory_location }}"
+#  register: reg
+#  failed_when: reg.stat.isdir is not defined
+
+- name: Create oracle inventory if does not exists
+  file:
+       path: "{{ inventory_location }}"
+       state: directory
+       owner: "{{ oracle_owner }}"
+       group: "{{ unix_group_name }}"
+       mode: 0775
+  become: yes
+  become_method: su
+
+#- name: Check if oracle base exists
+#  stat:
+#    path: "{{ oracle_base }}"
+#  register: reg
+#  failed_when: reg.stat.isdir is not defined
+
+- name: Create oracle base if does not exists
+  file:
+       path: "{{ oracle_base }}"
+       state: directory
+       owner: "{{ oracle_owner }}"
+       group: "{{ unix_group_name }}"
+       mode: 0775
+  become: yes
+  become_method: su
+
+- name: Check if oracle home is already installed
+  shell: grep "{{ oracle_home  }}" "{{ inventory_location }}/ContentsXML/inventory.xml" | wc -l
+  register: reg_oracle_home_exist
+  with_items: "{{ db_list }}"
+
+- name: Create oracle home directory
+  file:
+       path: "{{ oracle_home }}"
+       state: directory
+       mode: 0775
+  become: yes
+  become_user: "{{ oracle_owner }}"
+  with_items: "{{ db_list }}"
+
+- name: Prepare response file
+  template:
+    src: db_install_{{ item.oracle_db_version }}.j2
+    dest: "{{ oracle_db_rsp_file_dir }}/{{ oracle_db_rsp_file }}"
+  with_items: "{{ db_list }}"
+
+- name: Install oracle software
+  command: "{{ sw_stage }}/{{ item.oracle_db_version }}/database/runInstaller -silent -responseFile {{ oracle_db_rsp_file_dir }}/{{ oracle_db_rsp_file }} -showProgress -waitForCompletion"
+  become: yes
+  become_user: "{{ oracle_owner }}"
+  ignore_errors: yes
+  register: reg_oracle_sw_install
+  with_items: "{{ db_list }}"
+
+- name: Check for installation failures
+  fail:
+  when: not item.stdout | match(sw_install_check_pattern)
+  with_items: "{{ reg_oracle_sw_install.results }}"
+
+- name: Run root.sh script
+  command: "{{ oracle_home }}/root.sh"
+  become: true
+  become_method: su
+  register: reg_root_post_install
+  with_items: "{{ db_list }}"
+
+- name: Output of root.sh script
+  debug:
+     msg: "{{ reg_root_post_install.results|map(attribute='stdout_lines')|list }}"
+
+#- name: Clear installation binaries
+#  shell: rm -rf "{{ sw_stage }}/{{ item.oracle_db_version }}/database"
+#  when: purge_install_binaries is defined and purge_install_binaries

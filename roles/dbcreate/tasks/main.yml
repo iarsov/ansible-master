@@ -1,0 +1,32 @@
+
+- name: Get list of existing databases
+  shell: grep {{ item.oracle_db_name }}:{{ oracle_home }} /etc/oratab | wc -l
+  with_items: "{{ oracle_databases }}"
+  register: reg_db_exists
+
+- name: Check if database is already created
+  fail:
+  with_items: "{{ reg_db_exists.results }}"
+  when: item.stdout|int != 0|int
+
+- name: Prepare response file
+  template:
+    src: db_create_{{ item.oracle_db_version }}.j2
+    dest: "{{ oracle_db_rsp_file_dir }}/{{ oracle_dbca_rsp_file }}"
+  with_items: "{{ oracle_databases }}"
+
+- name: Create Database version before 12.2
+  command: "{{ oracle_home }}/bin/dbca -silent -responseFile {{ oracle_db_rsp_file_dir }}/{{ oracle_dbca_rsp_file }} -redoLogFileSize {{ item.ora_redo_file_size }}"
+  become: yes
+  become_user: "{{ oracle_owner }}"
+  with_items: "{{ oracle_databases }}"
+  register: reg_db_create
+  when: item.oracle_db_version != "12.2.0.1"
+
+- name: Create Database version 12.2
+  command: "{{ oracle_home }}/bin/dbca -createDatabase -silent -responseFile {{ oracle_db_rsp_file_dir }}/{{ oracle_dbca_rsp_file }} -redoLogFileSize {{ item.ora_redo_file_size }}"
+  become: yes
+  become_user: "{{ oracle_owner }}"
+  with_items: "{{ oracle_databases }}"
+  register: reg_db_create
+  when: item.oracle_db_version == "12.2.0.1"

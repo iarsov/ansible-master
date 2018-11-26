@@ -1,0 +1,8 @@
+
+# PBcheckdbstatus.yml
+
+- name: Check Database Status
+  hosts: oracle11g-vm1
+  user: oracle
+  roles:
+   - pb_checkdbstatus

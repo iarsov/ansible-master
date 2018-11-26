@@ -1,0 +1,38 @@
+
+oracle_base: "/oracle/app/oracle" # Oracle base directory
+oracle_home: "/oracle/app/oracle/product/{{ item.oracle_db_version }}/{{ item.oracle_home_dir }}" # Oracle home directory
+
+#
+#
+# oracle_db_version: 12.2.0.1 | 12.1.0.2 | 12.1.0.1 | 11.2.0.4 | 11.2.0.3
+#
+# example
+oracle_databases:
+   - oracle_home_dir: db1
+     oracle_db_version: 12.1.0.2
+     oracle_db_name: orcl
+     patch: false
+     ora_sid: orcl
+     ora_gdb_name: orcl
+     ora_db_conftype: SI
+     ora_character_set: AL32UTF8
+     ora_national_character_set: AL16UTF16
+     ora_is_container: false #set to true for multitenant
+     ora_num_pdbs: 0
+     ora_pdb_prefix: pdb
+     ora_sys_password: Oracle_4U
+     ora_system_password: Oracle_4U
+     ora_asmsnmp_password: Oracle_4U
+     ora_em_config: NONE # CENTRAL|DBEXPRESS|ALL|NONE
+     ora_dbf_dest: "{{ oracle_base }}/oradata" # ASM diskgroup or FS absolute location
+     ora_recovery_dest: "{{ oracle_base }}/fast_recovery_area"
+     ora_recovery_size: 2048
+     ora_storage_type: FS # < FS | ASM >
+     ora_data_group:
+     ora_rec_group:
+     ora_sample_schemas: true
+     ora_init_params: "" #sga_max_size=2g,sga_target=2g
+     ora_auto_memory_mgmt: FALSE #
+     ora_total_memory: 8192 # Memory allocated for Oracle in MB
+     ora_db_type: MULTIPURPOSE # <MULTIPURPOSE | DATA_WAREHOUSING | OLTP>
+     ora_redo_file_size: 100

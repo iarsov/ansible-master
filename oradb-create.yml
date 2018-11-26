@@ -1,0 +1,6 @@
+- name: Create Database
+  hosts:
+  user: ansible
+  become: yes
+  roles: 
+   - dbcreate

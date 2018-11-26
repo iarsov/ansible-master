@@ -1,0 +1,14 @@
+
+- name: Host Configuration
+  hosts: database
+  user: root
+  become: yes
+  roles:
+   - host_configuration
+
+- name: Database Software Installation
+  hosts: database
+  user: root
+  become: yes
+  roles:
+   - install_db_software

@@ -1,0 +1,10 @@
+- name: server reboot
+  shell: reboot
+
+- name: Wait for server to restart
+  local_action:
+    module: wait_for
+      host= "{{ ansible_ssh_host }}"
+      port=22
+      delay=1
+      timeout=300

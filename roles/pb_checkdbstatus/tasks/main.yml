@@ -1,0 +1,20 @@
+
+
+- name: Set DB env
+  shell: . oraenv <<< orcl1
+
+- name: "Push sql scripts"
+  copy:
+    src: "{{ role_path }}/files/checkdbstatus.sql"
+    dest: "/tmp"
+
+- name: Check database status
+  shell: . oraenv <<< orcl1; $ORACLE_HOME/bin/sqlplus / as sysdba @/tmp/checkdbstatus.sql
+  register: reg_db_exists
+
+- name: Fetch output
+  fetch:
+    fail_on_missing: yes
+    flat: yes
+    src: "/tmp/checkdbstatus.out"
+    dest: "/tmp/checkdbstatus.out"
