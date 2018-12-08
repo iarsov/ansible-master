@@ -1,0 +1,6 @@
+- name: Manage database user
+  hosts:
+  user: ansible
+  become: yes
+  roles: 
+   - oradb-user-manage
