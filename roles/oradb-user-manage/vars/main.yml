@@ -1,5 +1,5 @@
 
 
-db: pdb1
-dbuser: sh
-action: lock #unlock
+db: pdb1 #vongo_var
+dbuser: sh  #vongo_var
+action: lock #unlock.   #vongo_var
