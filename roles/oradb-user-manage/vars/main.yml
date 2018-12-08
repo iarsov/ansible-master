@@ -1,0 +1,5 @@
+
+
+db: pdb1
+dbuser: sh
+action: lock #unlock

@@ -1,0 +1,25 @@
+
+- name: "Push SQL script for user lock"
+  when: "{{ action }} == lock"
+  copy:
+    src: "{{ role_path }}/files/user_lock.sql"
+    dest: "/tmp"
+
+- name: "Push SQL script for user unlock"
+  when: "{{ action }} == lock"
+  copy:
+    src: "{{ role_path }}/files/user_unlock.sql"
+    dest: "/tmp"
+
+- name: "Lock database user"
+  shell: . oraenv <<< {{ db }}; $ORACLE_HOME/bin/sqlplus / as sysdba @/tmp/user_lock.sql
+
+- name: "Unlock database user"
+  shell: . oraenv <<< {{ db }}; $ORACLE_HOME/bin/sqlplus / as sysdba @/tmp/user_unlock.sql
+
+- name: "Fetch output"
+  fetch:
+    fail_on_missing: yes
+    flat: yes
+    src: "/tmp/oradbusermanage.out"
+    dest: "/tmp/oradbusermanage.out"
